@@ -77,22 +77,6 @@ pub struct LeafNode {
 }
 
 impl LeafNode {
-    fn new(
-        tag: Option<String>,
-        value: String,
-        attributes: Option<HashMap<String, String>>,
-    ) -> Result<Self, String> {
-        if value.trim().is_empty() {
-            Err(String::from("LeafNode must contain a value"))
-        } else {
-            Ok(Self {
-                tag,
-                value,
-                attributes,
-            })
-        }
-    }
-
     // Takes the leaf node an turns it into an html string.
     fn to_html(&self) -> String {
         // If there is a tag then should wrap the value in the tag, but when
