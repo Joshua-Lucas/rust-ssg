@@ -26,6 +26,27 @@ impl HTMLAttributes {
 }
 
 #[derive(Debug, PartialEq)]
+pub enum HTMLChildNode {
+    HTML(HTMLNode),
+    Leaf(LeafNode),
+    Parent(ParentNode),
+}
+
+trait ToHtmlString {
+    fn into_html(&self) -> String;
+}
+
+impl ToHtmlString for HTMLChildNode {
+    fn into_html(&self) -> String {
+        match self {
+            HTMLChildNode::HTML(x) => x.into_html(),
+            HTMLChildNode::Leaf(x) => x.into_html(),
+            HTMLChildNode::Parent(x) => x.into_html(),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq)]
 pub struct HTMLNode {
     pub tag: Option<String>,
     pub value: Option<String>,
@@ -33,9 +54,11 @@ pub struct HTMLNode {
     pub attributes: Option<HTMLAttributes>,
 }
 
-impl HTMLNode {
+impl ToHtmlString for HTMLNode {
     //todo! update later to turn the HTMLNode into html
-    fn into_html(self) {}
+    fn into_html(&self) -> String {
+        format!("{}", self)
+    }
 }
 
 impl fmt::Display for HTMLNode {
@@ -75,16 +98,16 @@ impl fmt::Display for HTMLNode {
 
 // Leaf Node is a type of HTMLNode that represents a single HTML tag with no
 // children.
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct LeafNode {
     pub tag: Option<String>,
     pub value: String,
     pub attributes: Option<HTMLAttributes>,
 }
 
-impl LeafNode {
+impl ToHtmlString for LeafNode {
     // Takes the leaf node an turns it into an html string.
-    fn to_html(&self) -> String {
+    fn into_html(&self) -> String {
         // If there is a tag then should wrap the value in the tag, but when
         // there is no tag should return raw text.
         match &self.tag {
@@ -187,7 +210,7 @@ mod tests {
 
         for (title, input, expected) in test_cases.iter() {
             assert_eq!(
-                &input.to_html(),
+                &input.into_html(),
                 expected,
                 "\"{}\" test failed for input: {:?} and expexted: {}",
                 title,
