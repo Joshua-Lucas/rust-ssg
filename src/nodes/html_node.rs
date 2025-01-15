@@ -1,6 +1,8 @@
 use core::fmt;
 use std::collections::HashMap;
 
+use super::leaf_node::LeafNode;
+
 // HTML Attribute type is used throughout all the nodes.
 #[derive(Debug, PartialEq)]
 pub struct HTMLAttributes {
@@ -9,7 +11,7 @@ pub struct HTMLAttributes {
 
 impl HTMLAttributes {
     // Converts the Hash map into an HTML string
-    fn to_html(&self) -> String {
+    pub fn to_html(&self) -> String {
         // I want the attributes to produce a lexicographical string, so I
         // extract the keys, sort then concat the strings.
         let mut keys: Vec<&String> = self.attr.keys().collect();
@@ -96,34 +98,6 @@ impl fmt::Display for HTMLNode {
     }
 }
 
-// Leaf Node is a type of HTMLNode that represents a single HTML tag with no
-// children.
-#[derive(Debug, PartialEq)]
-pub struct LeafNode {
-    pub tag: Option<String>,
-    pub value: String,
-    pub attributes: Option<HTMLAttributes>,
-}
-
-impl ToHtmlString for LeafNode {
-    // Takes the leaf node an turns it into an html string.
-    fn into_html(&self) -> String {
-        // If there is a tag then should wrap the value in the tag, but when
-        // there is no tag should return raw text.
-        match &self.tag {
-            Some(t) => {
-                if let Some(a) = &self.attributes {
-                    format!("<{} {}>{}</{}>", t, a.to_html(), self.value, t)
-                } else {
-                    // Ex. t = p then "<p class="disabled">This is the value</p>
-                    format!("<{}>{}</{}>", t, self.value, t)
-                }
-            }
-            None => self.value.clone(),
-        }
-    }
-}
-
 // Parent Node will handle the nesting of html nodes.
 #[derive(Debug, PartialEq)]
 pub struct ParentNode {
@@ -151,6 +125,7 @@ impl ToHtmlString for ParentNode {
         );
     }
 }
+
 #[cfg(test)]
 mod tests {
 
@@ -189,59 +164,6 @@ mod tests {
                 "\"{}\" test failed for input: {:?} and expexted: {}",
                 title,
                 value,
-                expected
-            );
-        }
-    }
-
-    // Tests for LeafNode
-    #[test]
-    fn test_new_leaf_node() {}
-
-    #[test]
-    fn test_leaf_node_to_html() {
-        let test_cases = vec![
-            (
-                "Test Leaf Node with a tag",
-                LeafNode {
-                    tag: Some(String::from("p")),
-                    value: String::from("This is a paragraph of text."),
-                    attributes: None,
-                },
-                String::from("<p>This is a paragraph of text.</p>"),
-            ),
-            (
-                "Test Leaf Node without a tag",
-                LeafNode {
-                    tag: None,
-                    value: String::from("This is plain text."),
-                    attributes: None,
-                },
-                String::from("This is plain text."),
-            ),
-            (
-                "Test Leaf Node with tag and attributes",
-                LeafNode {
-                    tag: Some(String::from("a")),
-                    value: String::from("Click me!"),
-                    attributes: Some(HTMLAttributes {
-                        attr: HashMap::from([
-                            (String::from("href"), String::from("https://www.google.com")),
-                            (String::from("target"), String::from("_blank")),
-                        ]),
-                    }),
-                },
-                String::from("<a href=\"https://www.google.com\" target=\"_blank\">Click me!</a>"),
-            ),
-        ];
-
-        for (title, input, expected) in test_cases.iter() {
-            assert_eq!(
-                &input.into_html(),
-                expected,
-                "\"{}\" test failed for input: {:?} and expexted: {}",
-                title,
-                input,
                 expected
             );
         }
