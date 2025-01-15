@@ -32,7 +32,7 @@ pub enum HTMLChildNode {
     Parent(ParentNode),
 }
 
-trait ToHtmlString {
+pub trait ToHtmlString {
     fn into_html(&self) -> String;
 }
 

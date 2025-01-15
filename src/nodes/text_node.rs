@@ -1,7 +1,7 @@
 use core::fmt;
 use std::collections::HashMap;
 
-use super::html_nodes::{HTMLAttributes, LeafNode};
+use super::html_node::{HTMLAttributes, LeafNode};
 
 #[derive(Debug, PartialEq)]
 pub enum TextType {
