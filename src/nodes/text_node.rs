@@ -4,7 +4,7 @@ use std::collections::HashMap;
 use super::html_node::HTMLAttributes;
 use super::leaf_node::LeafNode;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum TextType {
     Normal,
     Bold,
@@ -14,7 +14,36 @@ pub enum TextType {
     Image,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
+struct MarkdownDelimiter {
+    name: TextType,
+    delimiters: &'static [&'static str],
+}
+
+impl TextType {
+    fn get_delimiter(&self) -> Option<MarkdownDelimiter> {
+        match self {
+            TextType::Normal => None,
+            TextType::Bold => Some(MarkdownDelimiter {
+                name: TextType::Bold,
+                delimiters: &["**", "__"],
+            }),
+            TextType::Italic => Some(MarkdownDelimiter {
+                name: TextType::Italic,
+                delimiters: &["*", "_"],
+            }),
+            TextType::Code => Some(MarkdownDelimiter {
+                name: TextType::Code,
+                delimiters: &["`"],
+            }),
+            // todo!() refactor later
+            TextType::Link => None,
+            TextType::Image => None,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub struct TextNode {
     pub content: String,
     pub text_type: TextType,
@@ -85,6 +114,50 @@ impl TextNode {
                 }
             }
         }
+    }
+
+    pub fn split_node_on_delimiter(&self, delimiter: MarkdownDelimiter) -> Vec<TextNode> {
+        let text_nodes = match self.text_type {
+            TextType::Normal => {
+                let content = vec![self.content.as_str()];
+
+                let delim = &delimiter.delimiters;
+                // Update this to convert strings into text nodes.
+                // Then also have to account for there being both text node
+                // type and str type maybe us a generic ?
+                let split = delim.into_iter().fold(content, |acc, d| {
+                    acc.iter()
+                        .flat_map(|&x| x.split(d).collect::<Vec<_>>())
+                        .collect()
+                });
+
+                // let deliminators = vec![TextType::Bold, TextType::Italic, TextType::Code];
+
+                // deliminators.iter().fold(vec![self.content], |acc, delim| {
+                //     let type_deliminators = delim.get_delimiter().unwrap();
+
+                //     let delm_vec = type_deliminators.delimiters.iter().fold(&acc, |x, d| {
+                //         x.into_iter().reduce(|acc, a| acc.split(*d)).unwrap()
+                //     });
+                //     println!("{:?}", type_deliminators);
+                //     println!("{:?}", delm_vec);
+                //     acc
+                // });
+
+                // Determine deliminator. Need to loop through all delimnators
+                // Maybe create an enum maybe a hashmap for deliminator types.
+                // like bold = ** or __
+                // like HashMap::from({"**": TextType::Bold, "__": TextType::Bold})
+                vec![TextNode {
+                    content: String::from("test"),
+                    url: None,
+                    text_type: TextType::Normal,
+                }]
+            }
+            _ => vec![self.clone()],
+        };
+
+        return text_nodes;
     }
 }
 
@@ -203,4 +276,7 @@ mod tests {
             );
         }
     }
+
+    #[test]
+    fn parse_deliminator() {}
 }
